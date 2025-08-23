@@ -32,16 +32,13 @@ function App() {
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
 
-              {/* Patient Routes */}
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <SimpleDashboard />
-                </ProtectedRoute>
-              } />
+              {/* ✅ PUBLIC ROUTE - No protection needed for browsing doctors */}
+              <Route path="/patient/find-doctors" element={<FindDoctors />} />
 
-              <Route path="/patient/find-doctors" element={
+              {/* ✅ PROTECTED PATIENT ROUTES */}
+              <Route path="/dashboard" element={
                 <ProtectedRoute requiredRole="patient">
-                  <FindDoctors />
+                  <SimpleDashboard />
                 </ProtectedRoute>
               } />
 
@@ -69,7 +66,7 @@ function App() {
                 </ProtectedRoute>
               } />
 
-              {/* Doctor Routes */}
+              {/* ✅ PROTECTED DOCTOR ROUTES */}
               <Route path="/doctor/dashboard" element={
                 <ProtectedRoute requiredRole="doctor">
                   <DoctorDashboard />

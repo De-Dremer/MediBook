@@ -1,124 +1,72 @@
 const jwt = require('jsonwebtoken');
-const prisma = require('../config/prisma');
+const { PrismaClient } = require('@prisma/client');
 
-// Authenticate user and add user info to request
+const prisma = new PrismaClient();
+
 const authUser = async (req, res, next) => {
     try {
-        const token = req.header('Authorization')?.replace('Bearer ', '');
+        const authHeader = req.headers.authorization;
+        const token = authHeader && authHeader.replace('Bearer ', '');
 
         if (!token) {
             return res.status(401).json({
                 success: false,
-                message: 'Access denied. No token provided.'
+                message: 'Access token required'
             });
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+
         const user = await prisma.user.findUnique({
-            where: { id: decoded.id },
+            where: { id: decoded.userId },
             select: {
                 id: true,
                 name: true,
                 email: true,
                 role: true,
-                isActive: true
+                isVerified: true,
+                phone: true
             }
         });
 
         if (!user) {
             return res.status(401).json({
                 success: false,
-                message: 'Invalid token. User not found.'
-            });
-        }
-
-        if (!user.isActive) {
-            return res.status(401).json({
-                success: false,
-                message: 'Account is deactivated.'
+                message: 'Invalid token - user not found'
             });
         }
 
         req.user = {
-            ...user,
-            role: user.role.toLowerCase()
+            userId: user.id,
+            email: user.email,
+            role: user.role,
+            name: user.name,
+            isVerified: user.isVerified
         };
+
         next();
     } catch (error) {
-        res.status(401).json({
-            success: false,
-            message: 'Invalid token.',
-            error: error.message
-        });
-    }
-};
+        console.error('❌ Auth middleware error:', error);
 
-// Authorize specific roles
-const authorize = (...roles) => {
-    return (req, res, next) => {
-        if (!req.user) {
+        if (error.name === 'JsonWebTokenError') {
             return res.status(401).json({
                 success: false,
-                message: 'Access denied. Authentication required.'
+                message: 'Invalid token'
             });
         }
 
-        if (!roles.includes(req.user.role)) {
-            return res.status(403).json({
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({
                 success: false,
-                message: `Access denied. ${roles.join(' or ')} role required.`
+                message: 'Token expired'
             });
         }
 
-        next();
-    };
-};
-
-// Check if user is doctor
-const authDoctor = async (req, res, next) => {
-    try {
-        await authUser(req, res, () => {
-            if (req.user.role !== 'doctor') {
-                return res.status(403).json({
-                    success: false,
-                    message: 'Access denied. Doctor role required.'
-                });
-            }
-            next();
-        });
-    } catch (error) {
-        res.status(401).json({
+        return res.status(500).json({
             success: false,
-            message: 'Authentication failed.',
-            error: error.message
+            message: 'Authentication failed'
         });
     }
 };
 
-// Check if user is admin
-const authAdmin = async (req, res, next) => {
-    try {
-        await authUser(req, res, () => {
-            if (req.user.role !== 'admin') {
-                return res.status(403).json({
-                    success: false,
-                    message: 'Access denied. Admin role required.'
-                });
-            }
-            next();
-        });
-    } catch (error) {
-        res.status(401).json({
-            success: false,
-            message: 'Authentication failed.',
-            error: error.message
-        });
-    }
-};
-
-module.exports = {
-    authUser,
-    authorize,
-    authDoctor,
-    authAdmin
-};
+module.exports = { authUser };

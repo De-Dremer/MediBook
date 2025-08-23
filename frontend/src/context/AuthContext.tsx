@@ -1,68 +1,52 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
-// Types
 interface User {
     id: string;
     name: string;
     email: string;
-    phone: string;
-    role: 'patient' | 'doctor' | 'admin';
+    phone?: string;
+    role: string;
     isVerified: boolean;
-    profileImage?: string;
-    dateOfBirth?: string;
-    gender?: string;
 }
 
 interface AuthContextType {
     user: User | null;
     token: string | null;
     login: (email: string, password: string) => Promise<{ success: boolean; redirectPath: string }>;
-    register: (userData: RegisterData) => Promise<void>;
+    register: (userData: any) => Promise<void>;
     logout: () => void;
     loading: boolean;
 }
 
-interface RegisterData {
-    name: string;
-    email: string;
-    password: string;
-    phone: string;
-    role: 'patient' | 'doctor';
-    dateOfBirth?: string;
-    gender?: 'male' | 'female' | 'other';
-}
-
-// Create context
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// ✅ Real API configuration - Connected to your backend
-const API_BASE_URL = 'http://localhost:4000/api';
-
+// ✅ Create axios instance with correct base URL
 const api = axios.create({
-    baseURL: API_BASE_URL,
+    baseURL: 'http://localhost:4000/api',
     headers: {
         'Content-Type': 'application/json',
     },
 });
 
-// Request interceptor
+// ✅ Add request interceptor to include token
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
         if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+            config.headers['Authorization'] = `Bearer ${token}`;
+            console.log('🔑 Token added to request:', config.url);
         }
         return config;
     },
     (error) => Promise.reject(error)
 );
 
-// Response interceptor
+// ✅ Add response interceptor for error handling
 api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
+            console.log('🚨 401 Unauthorized - clearing auth data');
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             window.location.href = '/login';
@@ -71,7 +55,8 @@ api.interceptors.response.use(
     }
 );
 
-// Auth Provider Component
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(null);
@@ -79,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Initialize auth state
     useEffect(() => {
-        const initAuth = async () => {
+        const initAuth = () => {
             const storedToken = localStorage.getItem('token');
             const storedUser = localStorage.getItem('user');
 
@@ -87,14 +72,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 try {
                     setToken(storedToken);
                     setUser(JSON.parse(storedUser));
-
-                    // ✅ Verify token with your backend
-                    await api.get('/auth/profile');
+                    console.log('✅ Auth state restored from localStorage');
                 } catch (error) {
+                    console.log('❌ Failed to parse stored user data');
                     localStorage.removeItem('token');
                     localStorage.removeItem('user');
-                    setToken(null);
-                    setUser(null);
                 }
             }
             setLoading(false);
@@ -103,28 +85,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         initAuth();
     }, []);
 
-    // ✅ Real login function - calls your backend
-    const login = async (email: string, password: string): Promise<{ success: boolean; redirectPath: string }> => {
+    const login = async (email: string, password: string) => {
         try {
-            console.log('🔄 Calling backend login API...');
+            console.log('🔄 Attempting login...');
             const response = await api.post('/auth/login', { email, password });
-
-            console.log('✅ Backend response:', response.data);
 
             if (response.data.success) {
                 const { token: newToken, user: userData } = response.data;
+
                 setToken(newToken);
                 setUser(userData);
                 localStorage.setItem('token', newToken);
                 localStorage.setItem('user', JSON.stringify(userData));
 
-                // Role-based redirect logic
+                console.log('✅ Login successful');
+                toast.success('Login successful!');
+
+                // Determine redirect path
                 let redirectPath = '/dashboard';
-                if (userData.role === 'admin') {
+                if (userData.role === 'ADMIN') {
                     redirectPath = '/admin/dashboard';
-                } else if (userData.role === 'doctor') {
+                } else if (userData.role === 'DOCTOR') {
                     redirectPath = '/doctor/dashboard';
-                } else if (userData.role === 'patient') {
+                } else if (userData.role === 'PATIENT') {
                     redirectPath = '/dashboard';
                 }
 
@@ -134,39 +117,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
         } catch (error: any) {
             console.error('❌ Login error:', error);
-            throw new Error(error.response?.data?.message || 'Login failed');
+            const message = error.response?.data?.message || 'Login failed';
+            toast.error(message);
+            throw new Error(message);
         }
     };
 
-    // ✅ Real register function - calls your backend
-    const register = async (userData: RegisterData) => {
+    const register = async (userData: any) => {
         try {
-            console.log('🔄 Calling backend register API...');
+            console.log('🔄 Attempting registration...');
             const response = await api.post('/auth/register', userData);
-
-            console.log('✅ Registration response:', response.data);
 
             if (response.data.success) {
                 const { token: newToken, user: newUser } = response.data;
+
                 setToken(newToken);
                 setUser(newUser);
                 localStorage.setItem('token', newToken);
                 localStorage.setItem('user', JSON.stringify(newUser));
+
+                console.log('✅ Registration successful');
+                toast.success('Registration successful!');
             } else {
                 throw new Error(response.data.message || 'Registration failed');
             }
         } catch (error: any) {
             console.error('❌ Registration error:', error);
-            throw new Error(error.response?.data?.message || 'Registration failed');
+            const message = error.response?.data?.message || 'Registration failed';
+            toast.error(message);
+            throw new Error(message);
         }
     };
 
-    // Logout function
     const logout = () => {
         setToken(null);
         setUser(null);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        console.log('🚪 User logged out');
+        toast.success('Logged out successfully');
     };
 
     const value = {
@@ -185,7 +174,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 };
 
-// Custom hook to use auth context
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (context === undefined) {
@@ -194,5 +182,5 @@ export const useAuth = () => {
     return context;
 };
 
-// ✅ Export the API instance for use in other components
+// ✅ Export the configured API instance
 export { api };

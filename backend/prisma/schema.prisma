@@ -1,4 +1,3 @@
-// This is your Prisma schema file
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,64 +8,54 @@ datasource db {
 }
 
 model User {
-  id                String    @id @default(uuid()) @db.Uuid
-  name              String
-  email             String    @unique
-  password          String
-  phone             String?
-  role              Role      @default(PATIENT)
-  isVerified        Boolean   @default(false)
-  profileImage      String?
-  dateOfBirth       DateTime?
-  gender            Gender?
-  
-  // Doctor-specific fields
-  specialization    String?
-  qualification     String?
-  experience        Int?
-  consultationFee   Int?
-  location          String?
-  about             String?
-  rating            Float?    @default(4.5)
-  reviewCount       Int?      @default(0)
-  availability      Json?
-  
-  // Patient-specific fields
-  address           String?
-  emergencyContact  String?
-  bloodGroup        String?
-  allergies         String?
-  medicalHistory    String?
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
-  // Relations
-  patientAppointments Appointment[] @relation("PatientAppointments")
+  id                  String        @id @default(uuid()) @db.Uuid
+  name                String
+  email               String        @unique
+  password            String
+  phone               String?
+  role                Role          @default(PATIENT)
+  isVerified          Boolean       @default(false)
+  profileImage        String?
+  dateOfBirth         DateTime?
+  gender              Gender?
+  specialization      String?
+  qualification       String?
+  experience          Int?
+  consultationFee     Int?
+  location            String?
+  about               String?
+  rating              Float?        @default(4.5)
+  reviewCount         Int?          @default(0)
+  availability        Json?
+  address             String?
+  emergencyContact    String?
+  bloodGroup          String?
+  allergies           String?
+  medicalHistory      String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
   doctorAppointments  Appointment[] @relation("DoctorAppointments")
-  
+  patientAppointments Appointment[] @relation("PatientAppointments")
+
   @@map("users")
 }
 
 model Appointment {
-  id               String            @id @default(uuid()) @db.Uuid
-  patientId        String            @db.Uuid
-  doctorId         String            @db.Uuid
-  date             DateTime
-  time             String
-  appointmentType  String?           @default("consultation")
-  symptoms         String?
-  notes            String?
-  status           AppointmentStatus @default(UPCOMING)
-  consultationFee  Int?
-  
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  
-  // Relations
-  patient          User @relation("PatientAppointments", fields: [patientId], references: [id])
-  doctor           User @relation("DoctorAppointments", fields: [doctorId], references: [id])
-  
+  id              String            @id @default(uuid()) @db.Uuid
+  patientId       String            @db.Uuid
+  doctorId        String            @db.Uuid
+  date            DateTime
+  time            String
+  appointmentType String?           @default("consultation")
+  symptoms        String?
+  notes           String?
+  status          AppointmentStatus @default(UPCOMING)
+  consultationFee Int?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  doctor          User              @relation("DoctorAppointments", fields: [doctorId], references: [id])
+  patient         User              @relation("PatientAppointments", fields: [patientId], references: [id])
+
   @@map("appointments")
 }
 

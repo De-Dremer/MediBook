@@ -126,7 +126,7 @@ app.get('/db-info', async (req, res) => {
     }
 });
 
-// ✅ Simple 404 Handler (NO WILDCARDS - AVOIDS EXPRESS 5 ISSUES)
+// ✅ Simple 404 Handler
 app.use((req, res) => {
     res.status(404).json({
         success: false,
