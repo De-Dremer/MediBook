@@ -52,8 +52,8 @@ A modern, full-stack web application that connects patients with healthcare prof
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/medibook.git
-cd medibook
+git clone https://github.com/De-Dremer/MediBook.git
+cd MediBook
 ```
 
 ### 2. Install Dependencies
@@ -122,7 +122,6 @@ This project is licensed under the **MIT License**.
 
 ## 📞 Support
 
-- **Email**: support@medibook.com
 - **Issues**: GitHub Issues
 - **Documentation**: Project Wiki
 
@@ -130,4 +129,4 @@ This project is licensed under the **MIT License**.
 
 **Made with ❤️ for better healthcare accessibility**
 
-*Last updated: January 2025*
+*Last updated: August 2025*
