@@ -139,6 +139,9 @@ app.use((req, res) => {
             'POST /api/auth/login',
             'GET /api/doctors',
             'GET /api/doctors/:id',
+            'GET /api/doctors/appointments',
+            'PUT /api/doctors/appointments/:id/complete',
+            'PUT /api/doctors/appointments/:id/notes',
             'GET /api/appointments/my-appointments',
             'POST /api/appointments/book'
         ]
@@ -184,6 +187,9 @@ const startServer = async () => {
             console.log('   POST /api/auth/login        - User login');
             console.log('   GET  /api/doctors           - Get all doctors');
             console.log('   GET  /api/doctors/:id       - Get doctor by ID');
+            console.log('   GET  /api/doctors/appointments - Get doctor appointments');
+            console.log('   PUT  /api/doctors/appointments/:id/complete - Complete appointment');
+            console.log('   PUT  /api/doctors/appointments/:id/notes - Add/update notes');
             console.log('   POST /api/appointments/book - Book appointment');
             console.log('   GET  /api/appointments/my-appointments - Get my appointments\n');
 

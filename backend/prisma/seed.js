@@ -105,6 +105,66 @@ async function main() {
     });
     console.log('👤 Created patient:', patient.name);
 
+    // Create sample appointments
+    const appointments = [
+        {
+            patientId: patient.id,
+            doctorId: doctors[0].email, // Dr. Sarah Wilson
+            date: new Date('2025-01-25'),
+            time: '10:00 AM',
+            appointmentType: 'consultation',
+            symptoms: 'Chest pain and shortness of breath',
+            status: 'UPCOMING',
+            consultationFee: 1500
+        },
+        {
+            patientId: patient.id,
+            doctorId: doctors[1].email, // Dr. Michael Chen
+            date: new Date('2025-01-26'),
+            time: '2:00 PM',
+            appointmentType: 'follow-up',
+            symptoms: 'Skin rash and itching',
+            status: 'UPCOMING',
+            consultationFee: 1200
+        },
+        {
+            patientId: patient.id,
+            doctorId: doctors[2].email, // Dr. Emily Brown
+            date: new Date('2025-01-20'),
+            time: '11:00 AM',
+            appointmentType: 'check-up',
+            symptoms: 'Regular health check-up',
+            status: 'COMPLETED',
+            consultationFee: 1000,
+            notes: 'Patient is in good health. Advised regular exercise and balanced diet.'
+        }
+    ];
+
+    // Create appointments
+    for (const appointmentData of appointments) {
+        // Find the doctor by email to get their ID
+        const doctor = await prisma.user.findUnique({
+            where: { email: appointmentData.doctorId }
+        });
+        
+        if (doctor) {
+            const appointment = await prisma.appointment.create({
+                data: {
+                    patientId: appointmentData.patientId,
+                    doctorId: doctor.id,
+                    date: appointmentData.date,
+                    time: appointmentData.time,
+                    appointmentType: appointmentData.appointmentType,
+                    symptoms: appointmentData.symptoms,
+                    status: appointmentData.status,
+                    consultationFee: appointmentData.consultationFee,
+                    notes: appointmentData.notes
+                }
+            });
+            console.log('📅 Created appointment:', appointment.id, 'for', appointmentData.date);
+        }
+    }
+
     console.log('✅ Database seeding completed!');
 }
 

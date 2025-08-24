@@ -370,6 +370,202 @@ router.put('/profile', authUser, async (req, res) => {
     }
 });
 
+// ✅ GET /api/doctors/appointments - Get Doctor's Appointments (Protected)
+router.get('/appointments', authUser, async (req, res) => {
+    try {
+        const doctorId = req.user.userId;
+        
+        console.log('🔍 Fetching appointments for doctor:', doctorId);
+
+        // Verify the user is a doctor
+        if (req.user.role !== 'DOCTOR') {
+            return res.status(403).json({
+                success: false,
+                message: 'Only doctors can access this endpoint'
+            });
+        }
+
+        const appointments = await prisma.appointment.findMany({
+            where: {
+                doctorId: doctorId
+            },
+            include: {
+                patient: {
+                    select: {
+                        id: true,
+                        name: true,
+                        phone: true
+                    }
+                }
+            },
+            orderBy: [
+                { date: 'asc' },
+                { time: 'asc' }
+            ]
+        });
+
+        console.log('📊 Found appointments:', appointments.length);
+
+        const formattedAppointments = appointments.map(apt => ({
+            id: apt.id,
+            patientId: apt.patientId,
+            patientName: apt.patient.name,
+            patientPhone: apt.patient.phone,
+            date: apt.date.toISOString().split('T')[0],
+            time: apt.time,
+            status: apt.status.toLowerCase(),
+            appointmentType: apt.appointmentType || 'consultation',
+            symptoms: apt.symptoms,
+            notes: apt.notes,
+            consultationFee: apt.consultationFee || 1000,
+            createdAt: apt.createdAt.toISOString()
+        }));
+
+        console.log('✅ Returning formatted appointments:', formattedAppointments.length);
+
+        res.json({
+            success: true,
+            appointments: formattedAppointments
+        });
+
+    } catch (error) {
+        console.error('❌ Error fetching doctor appointments:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch appointments',
+            error: error.message
+        });
+    }
+});
+
+// ✅ PUT /api/doctors/appointments/:id/complete - Complete Appointment (Protected)
+router.put('/appointments/:id/complete', authUser, async (req, res) => {
+    try {
+        const appointmentId = parseInt(req.params.id);
+        const doctorId = req.user.userId;
+
+        console.log('🔄 Completing appointment:', appointmentId, 'for doctor:', doctorId);
+
+        // Verify the user is a doctor
+        if (req.user.role !== 'DOCTOR') {
+            return res.status(403).json({
+                success: false,
+                message: 'Only doctors can complete appointments'
+            });
+        }
+
+        // Find and update the appointment
+        const appointment = await prisma.appointment.findFirst({
+            where: {
+                id: appointmentId,
+                doctorId: doctorId
+            }
+        });
+
+        if (!appointment) {
+            return res.status(404).json({
+                success: false,
+                message: 'Appointment not found or not authorized'
+            });
+        }
+
+        const updatedAppointment = await prisma.appointment.update({
+            where: { id: appointmentId },
+            data: {
+                status: 'COMPLETED',
+                updatedAt: new Date()
+            }
+        });
+
+        console.log('✅ Appointment completed:', appointmentId);
+
+        res.json({
+            success: true,
+            message: 'Appointment marked as completed',
+            appointment: {
+                id: updatedAppointment.id,
+                status: updatedAppointment.status.toLowerCase()
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Error completing appointment:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to complete appointment',
+            error: error.message
+        });
+    }
+});
+
+// ✅ PUT /api/doctors/appointments/:id/notes - Add/Update Notes (Protected)
+router.put('/appointments/:id/notes', authUser, async (req, res) => {
+    try {
+        const appointmentId = parseInt(req.params.id);
+        const doctorId = req.user.userId;
+        const { notes } = req.body;
+
+        console.log('🔄 Adding notes to appointment:', appointmentId, 'for doctor:', doctorId);
+
+        // Verify the user is a doctor
+        if (req.user.role !== 'DOCTOR') {
+            return res.status(403).json({
+                success: false,
+                message: 'Only doctors can add notes to appointments'
+            });
+        }
+
+        if (!notes || !notes.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Notes are required'
+            });
+        }
+
+        // Find and update the appointment
+        const appointment = await prisma.appointment.findFirst({
+            where: {
+                id: appointmentId,
+                doctorId: doctorId
+            }
+        });
+
+        if (!appointment) {
+            return res.status(404).json({
+                success: false,
+                message: 'Appointment not found or not authorized'
+            });
+        }
+
+        const updatedAppointment = await prisma.appointment.update({
+            where: { id: appointmentId },
+            data: {
+                notes: notes.trim(),
+                updatedAt: new Date()
+            }
+        });
+
+        console.log('✅ Notes added to appointment:', appointmentId);
+
+        res.json({
+            success: true,
+            message: 'Notes added successfully',
+            appointment: {
+                id: updatedAppointment.id,
+                notes: updatedAppointment.notes
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Error adding notes:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to add notes',
+            error: error.message
+        });
+    }
+});
+
 // ✅ GET /api/doctors/:id - Get doctor by ID (Public)
 router.get('/:id', async (req, res) => {
     try {

@@ -4,8 +4,8 @@ import { api } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 interface Appointment {
-    id: number;
-    patientId: number;
+    id: string;
+    patientId: string;
     patientName: string;
     patientPhone?: string;
     date: string;
@@ -34,53 +34,12 @@ const DoctorAppointments: React.FC = () => {
             setLoading(true);
             console.log('🔄 Fetching doctor appointments...');
 
-            const response = await api.get('/doctor/appointments');
+            const response = await api.get('/doctors/appointments');
 
             if (response.data.success) {
                 setAppointments(response.data.appointments || []);
             } else {
-                // Mock data for now
-                setAppointments([
-                    {
-                        id: 1,
-                        patientId: 1,
-                        patientName: 'John Doe',
-                        patientPhone: '+91-9876543210',
-                        date: '2025-08-25',
-                        time: '10:00 AM',
-                        status: 'upcoming',
-                        appointmentType: 'Consultation',
-                        symptoms: 'Chest pain and shortness of breath',
-                        consultationFee: 1500,
-                        notes: ''
-                    },
-                    {
-                        id: 2,
-                        patientId: 2,
-                        patientName: 'Jane Smith',
-                        patientPhone: '+91-9876543211',
-                        date: '2025-08-25',
-                        time: '11:30 AM',
-                        status: 'upcoming',
-                        appointmentType: 'Follow-up',
-                        symptoms: 'Follow-up for hypertension',
-                        consultationFee: 1500,
-                        notes: ''
-                    },
-                    {
-                        id: 3,
-                        patientId: 3,
-                        patientName: 'Bob Wilson',
-                        patientPhone: '+91-9876543212',
-                        date: '2025-08-22',
-                        time: '2:00 PM',
-                        status: 'completed',
-                        appointmentType: 'Check-up',
-                        symptoms: 'Regular health check-up',
-                        consultationFee: 1500,
-                        notes: 'Patient is in good health. Advised regular exercise.'
-                    }
-                ]);
+                setAppointments([]);
             }
         } catch (error) {
             console.error('❌ Error fetching appointments:', error);
@@ -90,9 +49,9 @@ const DoctorAppointments: React.FC = () => {
         }
     };
 
-    const handleCompleteAppointment = async (appointmentId: number) => {
+    const handleCompleteAppointment = async (appointmentId: string) => {
         try {
-            const response = await api.put(`/doctor/appointments/${appointmentId}/complete`);
+            const response = await api.put(`/doctors/appointments/${appointmentId}/complete`);
 
             if (response.data.success) {
                 toast.success('Appointment marked as completed');
@@ -114,7 +73,7 @@ const DoctorAppointments: React.FC = () => {
         if (!selectedAppointment || !notes.trim()) return;
 
         try {
-            const response = await api.put(`/doctor/appointments/${selectedAppointment.id}/notes`, {
+            const response = await api.put(`/doctors/appointments/${selectedAppointment.id}/notes`, {
                 notes: notes.trim()
             });
 
