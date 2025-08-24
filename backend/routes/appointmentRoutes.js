@@ -8,6 +8,41 @@ const prisma = new PrismaClient();
 // ✅ Apply authentication to all appointment routes
 router.use(authUser);
 
+// 🔍 DEBUG: Check all doctors in database
+router.get('/debug/doctors', async (req, res) => {
+    try {
+        console.log('🔍 DEBUG: Checking all doctors in database...');
+        
+        const allDoctors = await prisma.user.findMany({
+            where: { role: 'DOCTOR' },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                specialization: true,
+                createdAt: true
+            }
+        });
+        
+        console.log('📊 Total doctors found:', allDoctors.length);
+        console.log('📊 Doctors:', allDoctors);
+        
+        res.json({
+            success: true,
+            message: 'Debug: All doctors in database',
+            count: allDoctors.length,
+            doctors: allDoctors
+        });
+    } catch (error) {
+        console.error('❌ Error in debug endpoint:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch debug data',
+            error: error.message
+        });
+    }
+});
+
 // ✅ GET /api/appointments/my-appointments
 router.get('/my-appointments', async (req, res) => {
     try {
@@ -63,6 +98,9 @@ router.post('/book', async (req, res) => {
         const { doctorId, date, time, appointmentType, symptoms } = req.body;
         const patientId = req.user.userId;
 
+        console.log('🔍 Booking appointment - Request data:', { doctorId, date, time, appointmentType, symptoms });
+        console.log('🔍 Patient ID:', patientId);
+
         if (!doctorId || !date || !time) {
             return res.status(400).json({
                 success: false,
@@ -70,9 +108,13 @@ router.post('/book', async (req, res) => {
             });
         }
 
+        console.log('🔍 Searching for doctor with ID:', doctorId);
         const doctor = await prisma.user.findFirst({
-            where: { id: doctorId, role: 'DOCTOR', isVerified: true }
+            where: { id: doctorId, role: 'DOCTOR' }
+            // Removed isVerified requirement as requested
         });
+        
+        console.log('🔍 Doctor search result:', doctor ? 'Found' : 'Not found');
 
         if (!doctor) {
             return res.status(404).json({

@@ -13,8 +13,9 @@ const getAllDoctors = async (req, res) => {
 
         // Build where clause for filtering
         const where = {
-            role: 'DOCTOR',
-            isVerified: true
+            role: 'DOCTOR'
+            // Temporarily removed isVerified requirement for development
+            // isVerified: true
         };
 
         if (search) {
@@ -49,6 +50,7 @@ const getAllDoctors = async (req, res) => {
                 rating: true,
                 reviewCount: true,
                 availability: true,
+                isVerified: true,
                 createdAt: true
             },
             take: parseInt(limit),
@@ -72,6 +74,7 @@ const getAllDoctors = async (req, res) => {
             availability: 'Available Today',
             image: doctor.profileImage || `https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&h=150&fit=crop&crop=face`,
             about: doctor.about || `Experienced ${doctor.specialization || 'General Medicine'} practitioner with ${doctor.experience || 5}+ years of experience.`
+            // Removed isVerified field as requested
         }));
 
         res.json({
@@ -99,8 +102,9 @@ const getDoctorById = async (req, res) => {
         const doctor = await prisma.user.findFirst({
             where: {
                 id: id,
-                role: 'DOCTOR',
-                isVerified: true
+                role: 'DOCTOR'
+                // Temporarily removed isVerified requirement for development
+                // isVerified: true
             },
             select: {
                 id: true,
@@ -117,6 +121,7 @@ const getDoctorById = async (req, res) => {
                 rating: true,
                 reviewCount: true,
                 availability: true,
+                isVerified: true,
                 createdAt: true
             }
         });
@@ -141,7 +146,8 @@ const getDoctorById = async (req, res) => {
             location: doctor.location || 'Mumbai',
             availability: 'Available Today',
             image: doctor.profileImage || `https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=200&h=200&fit=crop&crop=face`,
-            about: doctor.about || `Experienced ${doctor.specialization || 'General Medicine'} practitioner.`,
+            about: doctor.about || `Experienced ${doctor.specialization || 'General Medicine'} practitioner.`
+            // Removed isVerified field as requested
             languages: ['English', 'Hindi'],
             awards: ['Excellence in Patient Care 2024'],
             education: [`${doctor.qualification || 'MBBS'} - Medical College`],

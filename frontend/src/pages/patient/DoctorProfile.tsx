@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Star, MapPin, Clock, Users, Calendar, Award, BookOpen } from 'lucide-react';
+import { Star, MapPin, Clock, Users, Calendar, Award, BookOpen, AlertCircle } from 'lucide-react';
+import { api } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 interface Doctor {
-    id: number;
+    id: string;
     name: string;
     specialization: string;
     qualification: string;
@@ -38,76 +40,90 @@ const DoctorProfile: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'about' | 'reviews' | 'availability'>('about');
 
     useEffect(() => {
-        // Mock API call
-        setTimeout(() => {
-            const mockDoctor: Doctor = {
-                id: parseInt(doctorId || '1'),
-                name: "Dr. Sarah Wilson",
-                specialization: "Cardiology",
-                qualification: "MBBS, MD Cardiology, FACC",
-                experience: 12,
-                rating: 4.8,
-                reviewCount: 245,
-                consultationFee: 1500,
-                location: "Mumbai",
-                image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=200&h=200&fit=crop&crop=face",
-                about: "Dr. Sarah Wilson is a highly experienced cardiologist with over 12 years of practice. She specializes in preventive cardiology, heart disease management, and interventional procedures. She has completed her fellowship from the American College of Cardiology and is known for her patient-centered approach to cardiac care.",
-                languages: ["English", "Hindi", "Marathi"],
-                awards: [
-                    "Best Cardiologist Award 2023",
-                    "Excellence in Patient Care 2022",
-                    "Research Excellence Award 2021"
-                ],
-                education: [
-                    "MBBS - King Edward Memorial Hospital, Mumbai",
-                    "MD Cardiology - All India Institute of Medical Sciences, Delhi",
-                    "Fellowship in Interventional Cardiology - Mayo Clinic, USA"
-                ],
-                availability: {
-                    Monday: ["9:00 AM - 1:00 PM", "3:00 PM - 6:00 PM"],
-                    Tuesday: ["9:00 AM - 1:00 PM", "3:00 PM - 6:00 PM"],
-                    Wednesday: ["9:00 AM - 1:00 PM"],
-                    Thursday: ["9:00 AM - 1:00 PM", "3:00 PM - 6:00 PM"],
-                    Friday: ["9:00 AM - 1:00 PM", "3:00 PM - 6:00 PM"],
-                    Saturday: ["9:00 AM - 2:00 PM"],
-                    Sunday: ["Closed"]
-                }
-            };
+        const fetchDoctorProfile = async () => {
+            try {
+                setLoading(true);
+                console.log('🔄 Fetching doctor profile for ID:', doctorId);
 
-            const mockReviews: Review[] = [
-                {
-                    id: 1,
-                    patientName: "Rajesh Kumar",
-                    rating: 5,
-                    comment: "Excellent doctor! Very thorough examination and clear explanation of my heart condition. Highly recommended.",
-                    date: "2025-08-15"
-                },
-                {
-                    id: 2,
-                    patientName: "Priya Sharma",
-                    rating: 4,
-                    comment: "Good experience overall. Doctor was professional and answered all my questions patiently.",
-                    date: "2025-08-10"
-                },
-                {
-                    id: 3,
-                    patientName: "Amit Singh",
-                    rating: 5,
-                    comment: "Dr. Wilson helped me manage my cardiac condition effectively. Follow-up care was excellent.",
-                    date: "2025-08-05"
-                }
-            ];
+                const response = await api.get(`/doctors/${doctorId}`);
+                console.log('📥 Doctor profile response:', response.data);
 
-            setDoctor(mockDoctor);
-            setReviews(mockReviews);
-            setLoading(false);
-        }, 1000);
+                if (response.data.success) {
+                    setDoctor(response.data.doctor);
+                    
+                    // For now, we'll use mock reviews since the backend doesn't have reviews yet
+                    const mockReviews: Review[] = [
+                        {
+                            id: 1,
+                            patientName: "Rajesh Kumar",
+                            rating: 5,
+                            comment: "Excellent doctor! Very thorough examination and clear explanation of my heart condition. Highly recommended.",
+                            date: "2025-08-15"
+                        },
+                        {
+                            id: 2,
+                            patientName: "Priya Sharma",
+                            rating: 4,
+                            comment: "Good experience overall. Doctor was professional and answered all my questions patiently.",
+                            date: "2025-08-10"
+                        },
+                        {
+                            id: 3,
+                            patientName: "Amit Singh",
+                            rating: 5,
+                            comment: "Dr. Wilson helped me manage my cardiac condition effectively. Follow-up care was excellent.",
+                            date: "2025-08-05"
+                        }
+                    ];
+                    setReviews(mockReviews);
+                } else {
+                    toast.error(response.data.message || 'Failed to load doctor profile');
+                }
+            } catch (error: any) {
+                console.error('❌ Error fetching doctor profile:', error);
+                
+                if (error.response?.status === 404) {
+                    toast.error('Doctor not found');
+                } else {
+                    toast.error('Failed to load doctor profile');
+                }
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (doctorId) {
+            fetchDoctorProfile();
+        }
     }, [doctorId]);
 
-    if (loading || !doctor) {
+    if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="loading-spinner"></div>
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading doctor profile...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!doctor) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Doctor Not Found</h2>
+                    <p className="text-gray-600 mb-6">
+                        The doctor profile you're looking for doesn't exist or has been removed.
+                    </p>
+                    <Link
+                        to="/patient/find-doctors"
+                        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+                    >
+                        Find Other Doctors
+                    </Link>
+                </div>
             </div>
         );
     }
@@ -125,7 +141,7 @@ const DoctorProfile: React.FC = () => {
                         />
 
                         <div className="flex-1 text-center lg:text-left">
-                            <h1 className="text-3xl font-bold text-gray-900 mb-2">{doctor.name}</h1>
+                            <h1 className="text-3xl font-bold text-gray-900">{doctor.name}</h1>
                             <p className="text-xl text-blue-600 font-semibold mb-2">{doctor.specialization}</p>
                             <p className="text-gray-600 mb-4">{doctor.qualification}</p>
 
@@ -152,11 +168,11 @@ const DoctorProfile: React.FC = () => {
                         <div className="flex flex-col space-y-3 w-full lg:w-auto">
                             <Link
                                 to={`/patient/book-appointment/${doctor.id}`}
-                                className="btn-primary text-center px-8 py-3"
+                                className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors text-center font-medium"
                             >
                                 Book Appointment
                             </Link>
-                            <button className="btn-secondary px-8 py-3">
+                            <button className="bg-gray-100 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-200 transition-colors font-medium">
                                 Message Doctor
                             </button>
                         </div>

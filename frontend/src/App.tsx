@@ -18,6 +18,7 @@ import PatientProfile from './pages/patient/Profile';
 
 // Doctor Pages
 import DoctorDashboard from './pages/doctor/Dashboard';
+import DoctorProfileEdit from './pages/doctor/Profile';
 import DoctorAppointments from './pages/doctor/Appointments';
 
 function App() {
@@ -70,6 +71,12 @@ function App() {
               <Route path="/doctor/dashboard" element={
                 <ProtectedRoute requiredRole="doctor">
                   <DoctorDashboard />
+                </ProtectedRoute>
+              } />
+              // Add this inside your doctor routes
+              <Route path="/doctor/profile" element={
+                <ProtectedRoute requiredRole="doctor">
+                  <DoctorProfileEdit />
                 </ProtectedRoute>
               } />
 
