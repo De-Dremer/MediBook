@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext';
 import Layout from './components/common/Layout';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import Home from './pages/Home';
+import About from './pages/About';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 
@@ -32,6 +33,7 @@ function App() {
 
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
+              <Route path="/about" element={<About />} />
 
               {/* ✅ PUBLIC ROUTE - No protection needed for browsing doctors */}
               <Route path="/patient/find-doctors" element={<FindDoctors />} />

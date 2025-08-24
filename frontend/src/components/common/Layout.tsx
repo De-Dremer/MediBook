@@ -13,7 +13,6 @@ const Layout: React.FC = () => {
         { name: 'Home', href: '/' },
         { name: 'Find Doctors', href: '/patient/find-doctors' },
         { name: 'About', href: '/about' },
-        { name: 'Contact', href: '/contact' },
     ];
 
     const handleLogout = () => {

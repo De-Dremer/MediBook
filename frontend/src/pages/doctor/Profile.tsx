@@ -318,24 +318,6 @@ const DoctorProfile: React.FC = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-6">
                                     <div>
-                                        <h3 className="text-lg font-medium text-gray-900 mb-4">Contact Information</h3>
-                                        <div className="space-y-3">
-                                            <div className="flex items-center">
-                                                <Mail className="h-5 w-5 text-gray-400 mr-3" />
-                                                <span className="text-gray-600">{doctor.email}</span>
-                                            </div>
-                                            <div className="flex items-center">
-                                                <Phone className="h-5 w-5 text-gray-400 mr-3" />
-                                                <span className="text-gray-600">{doctor.phone || 'Not provided'}</span>
-                                            </div>
-                                            <div className="flex items-center">
-                                                <MapPin className="h-5 w-5 text-gray-400 mr-3" />
-                                                <span className="text-gray-600">{doctor.location}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div>
                                         <h3 className="text-lg font-medium text-gray-900 mb-4">Personal Details</h3>
                                         <div className="space-y-3">
                                             <div className="flex justify-between">
@@ -350,6 +332,24 @@ const DoctorProfile: React.FC = () => {
                                             <div className="flex justify-between">
                                                 <span className="text-gray-600">Gender:</span>
                                                 <span className="font-medium">{doctor.gender || 'Not provided'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="text-lg font-medium text-gray-900 mb-4">Contact Information</h3>
+                                        <div className="space-y-3">
+                                            <div className="flex items-center">
+                                                <Mail className="h-5 w-5 text-gray-400 mr-3" />
+                                                <span className="text-gray-600">{doctor.email}</span>
+                                            </div>
+                                            <div className="flex items-center">
+                                                <Phone className="h-5 w-5 text-gray-400 mr-3" />
+                                                <span className="text-gray-600">{doctor.phone || 'Not provided'}</span>
+                                            </div>
+                                            <div className="flex items-center">
+                                                <MapPin className="h-5 w-5 text-gray-400 mr-3" />
+                                                <span className="text-gray-600">{doctor.location}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -380,13 +380,24 @@ const DoctorProfile: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* About Section - Only show if exists */}
-                            {doctor.about && (
-                                <div className="mt-8 pt-8 border-t border-gray-200">
-                                    <h3 className="text-lg font-medium text-gray-900 mb-4">About</h3>
-                                    <p className="text-gray-700 leading-relaxed">{doctor.about}</p>
-                                </div>
-                            )}
+                            {/* About Section - Always visible with enhanced styling */}
+                            <div className="mt-8 pt-8 border-t border-gray-200">
+                                <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                                    <FileText className="h-5 w-5 mr-2 text-blue-600" />
+                                    About & Professional Bio
+                                </h3>
+                                {doctor.about ? (
+                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                                        <p className="text-gray-700 leading-relaxed text-lg">{doctor.about}</p>
+                                    </div>
+                                ) : (
+                                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
+                                        <FileText className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                                        <p className="text-gray-500 text-lg">No professional bio added yet.</p>
+                                        <p className="text-gray-400 text-sm mt-1">Click "Edit Profile" to add your professional bio and help patients understand your expertise.</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     ) : (
                         // Edit Mode - FORM
