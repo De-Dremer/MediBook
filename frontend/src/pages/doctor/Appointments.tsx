@@ -24,6 +24,8 @@ const DoctorAppointments: React.FC = () => {
     const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
     const [showNotesModal, setShowNotesModal] = useState<boolean>(false);
     const [notes, setNotes] = useState<string>('');
+    const [completingAppointment, setCompletingAppointment] = useState<string | null>(null);
+    const [savingNotes, setSavingNotes] = useState<string | null>(null);
 
     useEffect(() => {
         fetchAppointments();
@@ -51,6 +53,8 @@ const DoctorAppointments: React.FC = () => {
 
     const handleCompleteAppointment = async (appointmentId: string) => {
         try {
+            setCompletingAppointment(appointmentId);
+            console.log('🔄 Completing appointment:', appointmentId);
             const response = await api.put(`/doctors/appointments/${appointmentId}/complete`);
 
             if (response.data.success) {
@@ -62,10 +66,15 @@ const DoctorAppointments: React.FC = () => {
                             : apt
                     )
                 );
+            } else {
+                toast.error(response.data.message || 'Failed to complete appointment');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('❌ Error completing appointment:', error);
-            toast.error('Failed to complete appointment');
+            const message = error.response?.data?.message || 'Failed to complete appointment';
+            toast.error(message);
+        } finally {
+            setCompletingAppointment(null);
         }
     };
 
@@ -73,6 +82,8 @@ const DoctorAppointments: React.FC = () => {
         if (!selectedAppointment || !notes.trim()) return;
 
         try {
+            setSavingNotes(selectedAppointment.id);
+            console.log('🔄 Adding notes to appointment:', selectedAppointment.id);
             const response = await api.put(`/doctors/appointments/${selectedAppointment.id}/notes`, {
                 notes: notes.trim()
             });
@@ -89,10 +100,15 @@ const DoctorAppointments: React.FC = () => {
                 setShowNotesModal(false);
                 setNotes('');
                 setSelectedAppointment(null);
+            } else {
+                toast.error(response.data.message || 'Failed to add notes');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('❌ Error adding notes:', error);
-            toast.error('Failed to add notes');
+            const message = error.response?.data?.message || 'Failed to add notes';
+            toast.error(message);
+        } finally {
+            setSavingNotes(null);
         }
     };
 
@@ -247,30 +263,41 @@ const DoctorAppointments: React.FC = () => {
                                         )}
 
                                         {/* Actions */}
-                                        <div className="flex items-center justify-between mt-4">
-                                            <div className="flex space-x-3">
+                                        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                                            <div className="flex flex-wrap gap-3">
                                                 {appointment.status === 'upcoming' && (
                                                     <>
                                                         <button
-                                                            className="btn-primary"
+                                                            className="btn-success flex items-center"
                                                             onClick={() => handleCompleteAppointment(appointment.id)}
+                                                            disabled={completingAppointment === appointment.id}
                                                         >
-                                                            <CheckCircle className="h-4 w-4 mr-2" />
-                                                            Mark Complete
+                                                            {completingAppointment === appointment.id ? (
+                                                                <>
+                                                                    <div className="loading-spinner h-4 w-4 mr-2"></div>
+                                                                    Completing...
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <CheckCircle className="h-4 w-4 mr-2" />
+                                                                    Mark Complete
+                                                                </>
+                                                            )}
                                                         </button>
-                                                        <button className="btn-secondary">
+                                                        <button className="btn-secondary flex items-center">
                                                             <Phone className="h-4 w-4 mr-2" />
                                                             Call Patient
                                                         </button>
                                                     </>
                                                 )}
                                                 <button
-                                                    className="btn-secondary"
+                                                    className="btn-primary flex items-center"
                                                     onClick={() => {
                                                         setSelectedAppointment(appointment);
                                                         setNotes(appointment.notes || '');
                                                         setShowNotesModal(true);
                                                     }}
+                                                    disabled={savingNotes === appointment.id}
                                                 >
                                                     <Edit className="h-4 w-4 mr-2" />
                                                     {appointment.notes ? 'Edit Notes' : 'Add Notes'}
@@ -299,35 +326,44 @@ const DoctorAppointments: React.FC = () => {
 
                 {/* Notes Modal */}
                 {showNotesModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg font-semibold text-gray-900">
-                                    {selectedAppointment?.notes ? 'Edit Notes' : 'Add Notes'}
-                                </h3>
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-xl p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+                            <div className="flex items-center justify-between mb-6">
+                                <div>
+                                    <h3 className="text-xl font-semibold text-gray-900">
+                                        {selectedAppointment?.notes ? 'Edit Notes' : 'Add Notes'}
+                                    </h3>
+                                    <p className="text-sm text-gray-600 mt-1">
+                                        Patient: <strong>{selectedAppointment?.patientName}</strong>
+                                    </p>
+                                </div>
                                 <button
                                     onClick={() => {
                                         setShowNotesModal(false);
                                         setSelectedAppointment(null);
                                         setNotes('');
                                     }}
-                                    className="text-gray-400 hover:text-gray-600"
+                                    className="text-gray-400 hover:text-gray-600 transition-colors"
                                 >
                                     <X className="h-6 w-6" />
                                 </button>
                             </div>
 
-                            <div className="mb-4">
-                                <p className="text-sm text-gray-600 mb-2">
-                                    Patient: <strong>{selectedAppointment?.patientName}</strong>
-                                </p>
+                            <div className="mb-6">
+                                <label className="form-label">
+                                    Consultation Notes
+                                </label>
                                 <textarea
-                                    className="form-input"
-                                    rows={4}
-                                    placeholder="Add your consultation notes here..."
+                                    className="form-input resize-none"
+                                    rows={6}
+                                    placeholder="Add your consultation notes, diagnosis, treatment plan, prescriptions, or any other relevant information..."
                                     value={notes}
                                     onChange={(e) => setNotes(e.target.value)}
+                                    autoFocus
                                 />
+                                <p className="text-xs text-gray-500 mt-2">
+                                    These notes will be saved with the appointment and can be viewed later.
+                                </p>
                             </div>
 
                             <div className="flex space-x-3">
@@ -346,7 +382,7 @@ const DoctorAppointments: React.FC = () => {
                                     className="btn-primary flex-1"
                                     disabled={!notes.trim()}
                                 >
-                                    Save Notes
+                                    {selectedAppointment?.notes ? 'Update Notes' : 'Save Notes'}
                                 </button>
                             </div>
                         </div>

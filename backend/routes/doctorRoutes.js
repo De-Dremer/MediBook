@@ -441,7 +441,7 @@ router.get('/appointments', authUser, async (req, res) => {
 // ✅ PUT /api/doctors/appointments/:id/complete - Complete Appointment (Protected)
 router.put('/appointments/:id/complete', authUser, async (req, res) => {
     try {
-        const appointmentId = parseInt(req.params.id);
+        const appointmentId = req.params.id;
         const doctorId = req.user.userId;
 
         console.log('🔄 Completing appointment:', appointmentId, 'for doctor:', doctorId);
@@ -501,7 +501,7 @@ router.put('/appointments/:id/complete', authUser, async (req, res) => {
 // ✅ PUT /api/doctors/appointments/:id/notes - Add/Update Notes (Protected)
 router.put('/appointments/:id/notes', authUser, async (req, res) => {
     try {
-        const appointmentId = parseInt(req.params.id);
+        const appointmentId = req.params.id;
         const doctorId = req.user.userId;
         const { notes } = req.body;
 
