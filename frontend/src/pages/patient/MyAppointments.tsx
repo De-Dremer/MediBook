@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, User, MapPin, Phone, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import { api } from '../../context/AuthContext';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -25,7 +25,7 @@ const MyAppointments: React.FC = () => {
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [loading, setLoading] = useState(true);
     const [cancellingId, setCancellingId] = useState<string | null>(null);
-    const { user } = useAuth();
+    const { user: _user } = useAuth();
 
     useEffect(() => {
         fetchAppointments();

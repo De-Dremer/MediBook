@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, User, MapPin, Phone, CheckCircle, X, Edit } from 'lucide-react';
+import { Calendar, Clock, User, Phone, CheckCircle, X, Edit } from 'lucide-react';
 import { api } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
