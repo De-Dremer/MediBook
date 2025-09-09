@@ -1,12 +1,11 @@
-import React from 'react';
+ 
 import { Link } from 'react-router-dom';
 import {
     Heart,
     Calendar,
     Users,
     Clock,
-    Shield,
-    Award
+    Shield
 } from 'lucide-react';
 
 const Home: React.FC = () => {

@@ -10,7 +10,6 @@ import {
     Mail, 
     MapPin,
     CheckCircle,
-    Star,
     Calendar,
     UserCheck
 } from 'lucide-react';

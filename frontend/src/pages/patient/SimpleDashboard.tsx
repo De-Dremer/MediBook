@@ -5,9 +5,18 @@ import { Calendar, Heart, User, Search, Plus, Activity, Clock } from 'lucide-rea
 import { api } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
+type AppointmentType = {
+    id: string;
+    date: string;
+    time: string;
+    status: 'upcoming' | 'completed' | 'cancelled' | 'pending';
+    doctorName: string;
+    specialization: string;
+};
+
 const SimpleDashboard: React.FC = () => {
     const { user } = useAuth();
-    const [appointments, setAppointments] = useState([]);
+    const [appointments, setAppointments] = useState<AppointmentType[]>([]);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
         totalAppointments: 0,
@@ -31,13 +40,13 @@ const SimpleDashboard: React.FC = () => {
                 
                 // Calculate stats from real data
                 const total = appointmentsList.length;
-                const upcoming = appointmentsList.filter(apt => apt.status === 'upcoming').length;
-                const completed = appointmentsList.filter(apt => apt.status === 'completed').length;
+                const upcoming = appointmentsList.filter((apt: AppointmentType) => apt.status === 'upcoming').length;
+                const completed = appointmentsList.filter((apt: AppointmentType) => apt.status === 'completed').length;
                 
                 // Find next upcoming appointment
-                const nextAppt = appointmentsList
-                    .filter(apt => apt.status === 'upcoming')
-                    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+                const nextAppt = (appointmentsList as AppointmentType[])
+                    .filter((apt: AppointmentType) => apt.status === 'upcoming')
+                    .sort((a: AppointmentType, b: AppointmentType) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
                 
                 setStats({
                     totalAppointments: total,
@@ -222,7 +231,7 @@ const SimpleDashboard: React.FC = () => {
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            {appointments.slice(0, 3).map((appointment) => (
+                            {appointments.slice(0, 3).map((appointment: AppointmentType) => (
                                 <div key={appointment.id} className="flex items-center justify-between p-4 bg-[#F5F5F5] rounded-lg">
                                     <div className="flex items-center">
                                         <div className={`p-2 rounded-full mr-4 ${

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
     Calendar,
-    Users,
     Clock,
     TrendingUp,
     User,
@@ -85,16 +84,7 @@ const DoctorDashboard: React.FC = () => {
         }
     };
 
-    const formatDate = (dateString: string | null) => {
-        if (!dateString) return 'No upcoming appointments';
-
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric'
-        });
-    };
+    
 
     if (loading) {
         return (

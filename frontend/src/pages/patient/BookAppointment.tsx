@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, Clock, User, Phone, FileText, ArrowLeft } from 'lucide-react';
+import { Calendar, User, FileText, ArrowLeft } from 'lucide-react';
 import { api } from '../../context/AuthContext';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -128,7 +128,7 @@ const BookAppointment: React.FC = () => {
     // Get maximum date (30 days from now)
     const maxDate = new Date();
     maxDate.setDate(maxDate.getDate() + 30);
-    const maxDateString = maxDate.toISOString().split('T');
+    const _maxDateString = maxDate.toISOString().split('T');
 
     if (doctorLoading) {
         return (

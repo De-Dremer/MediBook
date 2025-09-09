@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Star, Clock, Users, Filter, X, AlertCircle } from 'lucide-react';
+import { Search, MapPin, Star, Clock, Users, X, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { api } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -26,7 +26,7 @@ const FindDoctors: React.FC = () => {
     const [doctors, setDoctors] = useState<Doctor[]>([]);
     const [allDoctors, setAllDoctors] = useState<Doctor[]>([]); // ✅ Store all doctors for client-side filtering
     const [loading, setLoading] = useState<boolean>(true);
-    const [showFilters, setShowFilters] = useState<boolean>(false);
+    const [_showFilters, _setShowFilters] = useState<boolean>(false);
 
     const specializations: string[] = [
         'All Specializations',
