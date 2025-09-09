@@ -19,7 +19,18 @@ app.use(cors({
     origin: (origin, callback) => {
         // Allow server-to-server requests (no Origin header)
         if (!origin) return callback(null, true);
+
+        // Exact match from env list
         if (allowedOrigins.includes(origin)) return callback(null, true);
+
+        // Allow Vercel preview/prod domains if using vercel.app
+        try {
+            const url = new URL(origin);
+            if (url.hostname.endsWith('.vercel.app')) {
+                return callback(null, true);
+            }
+        } catch (_) {}
+
         return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
