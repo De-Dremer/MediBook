@@ -18,7 +18,12 @@ const SimpleDashboard: React.FC = () => {
     const { user } = useAuth();
     const [appointments, setAppointments] = useState<AppointmentType[]>([]);
     const [loading, setLoading] = useState(true);
-    const [stats, setStats] = useState({
+    const [stats, setStats] = useState<{ 
+        totalAppointments: number;
+        upcomingAppointments: number;
+        completedAppointments: number;
+        nextAppointment: AppointmentType | null;
+    }>({
         totalAppointments: 0,
         upcomingAppointments: 0,
         completedAppointments: 0,
@@ -46,7 +51,7 @@ const SimpleDashboard: React.FC = () => {
                 // Find next upcoming appointment
                 const nextAppt = (appointmentsList as AppointmentType[])
                     .filter((apt: AppointmentType) => apt.status === 'upcoming')
-                    .sort((a: AppointmentType, b: AppointmentType) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+                    .sort((a: AppointmentType, b: AppointmentType) => new Date(a.date).getTime() - new Date(b.date).getTime())[0] || null;
                 
                 setStats({
                     totalAppointments: total,
