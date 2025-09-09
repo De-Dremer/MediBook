@@ -22,7 +22,7 @@ interface AuthContextType {
 
 // ✅ Create axios instance with correct base URL
 const api = axios.create({
-    baseURL: 'http://localhost:4000/api',
+    baseURL: 'https://medibook-production.up.railway.app/api',
     headers: {
         'Content-Type': 'application/json',
     },
